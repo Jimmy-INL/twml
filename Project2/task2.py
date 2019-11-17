@@ -238,7 +238,7 @@ def main(unused_argv):
 
     # Approximate a good learning rate with fewer rounds
     # Use the best rate for evaluating the rest of the hyperparameters
-    if True:
+    if False:
         print('---------------------- Learning rate -------------------------')
         hparam = [.1, .05, .025, .0125, .01, .0075, .005, .001]
         for i in range(0,8):
@@ -260,7 +260,7 @@ def main(unused_argv):
             print(']\na'+str(i)+' =', accuracy_arr)
 
     # Set learning rate
-    FLAGS.learning_rate = .0125
+    FLAGS.learning_rate = .001
 
     if True:
         print('\n---------------------- Clipping norm -------------------------')
@@ -291,8 +291,7 @@ def main(unused_argv):
             accuracy_arr = []
             sys.stdout.write('e'+str(i)+'=[')
             steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
-            #for epoch in range(1, 10*FLAGS.epochs + 1):
-            for epoch in range(1, FLAGS.epochs + 1):
+            for epoch in range(1, 10*FLAGS.epochs + 1):
                 # Train the model for one epoch.
                 lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
                 # Evaluate the model and print results
