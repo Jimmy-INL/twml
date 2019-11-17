@@ -1,2 +1,3 @@
-# twml
-Trustworthy machine learning
+# Trustworthy Machine Learning
+
+Source code for University of Helsinki course Trustworthy Machine Learning.
