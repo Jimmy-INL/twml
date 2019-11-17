@@ -227,13 +227,37 @@ def main(unused_argv):
         num_epochs=1,
         shuffle=False)
 
-    evaluate_lr = False # Find out a good learning rate just once
+    # Approximate a good learning rate with fewer rounds
+    # Use the best rate for evaluating the rest of the hyperparameters
+    evaluate_lr = False
     if evaluate_lr:
         print('---------------------- Learning rate -------------------------')
-        hparam = [.0002, .00015, .0001, .00005]
-        for i in range(0,4):
+        #hparam = [.1, .05, .025, .0125, .01, .0075, .005, .001]
+        hparam = [.002375, .00225, .002125]
+        for i in range(0,3):
             FLAGS.learning_rate = hparam[i]
             print('\n# Learning rate %s' % hparam[i])
+            # Training loop.
+            accuracy_arr = []
+            sys.stdout.write('e'+str(i)+'=[')
+            steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
+            for epoch in range(1, 3*FLAGS.epochs + 1):
+                # Train the model for one epoch.
+                lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
+                # Evaluate the model and print results
+                eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
+                test_accuracy = eval_results['accuracy']
+                accuracy_arr.append(test_accuracy)
+            print(']\na'+str(i)+' =', accuracy_arr)
+        return
+
+    if False:
+        FLAGS.learning_rate = .002125
+        print('\n---------------------- Clipping norm -------------------------')
+        hparam = [0.8,1.0,1.2]
+        for i in range(0,3):
+            FLAGS.l2_norm_clip = hparam[i]
+            print('\n# Clipping norm %s' % hparam[i])
             # Training loop.
             accuracy_arr = []
             sys.stdout.write('e'+str(i)+'=[')
@@ -246,66 +270,46 @@ def main(unused_argv):
                 test_accuracy = eval_results['accuracy']
                 accuracy_arr.append(test_accuracy)
             print(']\na'+str(i)+' =', accuracy_arr)
-        return
 
-    print('\n---------------------- Clipping norm -------------------------')
-    hparam = [0.8,1.0,1.2]
-    for i in range(0,3):
-        FLAGS.l2_norm_clip = hparam[i]
-        print('\n# Clipping norm %s' % hparam[i])
-        # Training loop.
-        accuracy_arr = []
-        sys.stdout.write('e'+str(i)+'=[')
-        steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
-        #for epoch in range(1, 10*FLAGS.epochs + 1):
-        for epoch in range(1, FLAGS.epochs + 1):
-            # Train the model for one epoch.
-            lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
-            # Evaluate the model and print results
-            eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
-            test_accuracy = eval_results['accuracy']
-            accuracy_arr.append(test_accuracy)
-        print(']\na'+str(i)+' =', accuracy_arr)
+    if False:
+        print('\n---------------------- Noise multiplier -------------------------')
+        hparam = [1.5,2.0,4.0]
+        for i in range(0,3):
+            FLAGS.noise_multiplier = hparam[i]
+            print('\n# Noise multiplier %s' % hparam[i])
+            # Training loop.
+            accuracy_arr = []
+            sys.stdout.write('e'+str(i)+'=[')
+            steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
+            #for epoch in range(1, 10*FLAGS.epochs + 1):
+            for epoch in range(1, FLAGS.epochs + 1):
+                # Train the model for one epoch.
+                lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
+                # Evaluate the model and print results
+                eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
+                test_accuracy = eval_results['accuracy']
+                accuracy_arr.append(test_accuracy)
+            print(']\na'+str(i)+' =', accuracy_arr)
 
-    print('\n---------------------- Noise multiplier -------------------------')
-    hparam = [1.5,2.0,4.0]
-    for i in range(0,3):
-        FLAGS.noise_multiplier = hparam[i]
-        print('\n# Noise multiplier %s' % hparam[i])
-        # Training loop.
-        accuracy_arr = []
-        sys.stdout.write('e'+str(i)+'=[')
-        steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
-        #for epoch in range(1, 10*FLAGS.epochs + 1):
-        for epoch in range(1, FLAGS.epochs + 1):
-            # Train the model for one epoch.
-            lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
-            # Evaluate the model and print results
-            eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
-            test_accuracy = eval_results['accuracy']
-            accuracy_arr.append(test_accuracy)
-        print(']\na'+str(i)+' =', accuracy_arr)
-
-
-    print('\n---------------------- Batch size -------------------------')
-    hparam = [16, 32, 64]
-    for i in range(0,3):
-        FLAGS.batch_size = hparam[i]
-        print('\n# Batch size %s' % hparam[i])
-        # Training loop.
-        accuracy_arr = []
-        sys.stdout.write('e'+str(i)+'=[')
-        steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
-        #for epoch in range(1, 10*FLAGS.epochs + 1):
-        for epoch in range(1, FLAGS.epochs + 1):
-            # Train the model for one epoch.
-            lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
-            # Evaluate the model and print results
-            eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
-            test_accuracy = eval_results['accuracy']
-            accuracy_arr.append(test_accuracy)
-        print(']\na'+str(i)+' =', accuracy_arr)
-
+    if False:
+        print('\n---------------------- Batch size -------------------------')
+        hparam = [16, 32, 64]
+        for i in range(0,3):
+            FLAGS.batch_size = hparam[i]
+            print('\n# Batch size %s' % hparam[i])
+            # Training loop.
+            accuracy_arr = []
+            sys.stdout.write('e'+str(i)+'=[')
+            steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
+            #for epoch in range(1, 10*FLAGS.epochs + 1):
+            for epoch in range(1, FLAGS.epochs + 1):
+                # Train the model for one epoch.
+                lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
+                # Evaluate the model and print results
+                eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
+                test_accuracy = eval_results['accuracy']
+                accuracy_arr.append(test_accuracy)
+            print(']\na'+str(i)+' =', accuracy_arr)
 
 
 if __name__ == '__main__':
