@@ -146,9 +146,6 @@ def lr_model_fn(features, labels, mode):
 
 def wrangle_the_data(data):
 
-    # education
-    data.drop(['education-num'], 1, inplace=True) # We can drop education-num, education is the same
-
     # age
     data['age'] = pd.cut(data.age, range(0, 105, 10), right=False)
     data['age'] = data['age'].astype("category").cat.codes
@@ -172,6 +169,12 @@ def wrangle_the_data(data):
     data['native-country'].replace([" Columbia", " Ecuador", " Peru"], "South-America", inplace=True)
     data['native-country'].replace([" England", " France", " Germany", " Greece", " Holand-Netherlands", " Hungary", " Ireland", " Italy", " Poland", " Portugal", " Scotland", " Yugoslavia"], "Europe", inplace=True)
     data['native-country'].replace([" South", " ?"], "Other", inplace=True)
+
+    # education
+    data.drop(['education-num'], 1, inplace=True) # We can drop education-num, education is the same
+
+    # drop some columns to prevent the model from overfitting
+    data.drop(['fnlwgt','relationship','capital-loss','capital-gain','occupation'], 1, inplace=True) # We can drop education-num, education is the same
 
     # Y
     data['salary'] = data['salary'].astype("category").cat.codes
@@ -229,27 +232,27 @@ def main(unused_argv):
 
     # Approximate a good learning rate with fewer rounds
     # Use the best rate for evaluating the rest of the hyperparameters
-    evaluate_lr = False
-    if evaluate_lr:
+    if True:
         print('---------------------- Learning rate -------------------------')
-        #hparam = [.1, .05, .025, .0125, .01, .0075, .005, .001]
-        hparam = [.002375, .00225, .002125]
-        for i in range(0,3):
+        hparam = [.1, .05, .025, .0125, .01, .0075, .005, .001]
+        #hparam = [.002375, .00225, .002125]
+        for i in range(0,8):
             FLAGS.learning_rate = hparam[i]
             print('\n# Learning rate %s' % hparam[i])
             # Training loop.
             accuracy_arr = []
             sys.stdout.write('e'+str(i)+'=[')
             steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
-            for epoch in range(1, 3*FLAGS.epochs + 1):
+            for epoch in range(1, 10*FLAGS.epochs + 1):
                 # Train the model for one epoch.
                 lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
                 # Evaluate the model and print results
                 eval_results = lr_classifier.evaluate(input_fn=eval_input_fn)
                 test_accuracy = eval_results['accuracy']
                 accuracy_arr.append(test_accuracy)
+                if (test_accuracy<.3):
+                    break
             print(']\na'+str(i)+' =', accuracy_arr)
-        return
 
     if False:
         FLAGS.learning_rate = .002125
