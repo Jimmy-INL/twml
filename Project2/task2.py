@@ -46,7 +46,7 @@ try:
 except KeyError:
     flags.DEFINE_boolean(
         'dpsgd', True, 'If True, train with DP-SGD. If False, train with vanilla SGD.')
-    flags.DEFINE_float('learning_rate', .0001, 'Learning rate for training')
+    flags.DEFINE_float('learning_rate', .05, 'Learning rate for training')
     flags.DEFINE_float('noise_multiplier', 2.0,
                        'Ratio of the standard deviation to the clipping norm')
     flags.DEFINE_float('l2_norm_clip', 1.0, 'Clipping norm')
@@ -230,12 +230,17 @@ def main(unused_argv):
         num_epochs=1,
         shuffle=False)
 
+    # The defaults
+    FLAGS.learning_rate = .05
+    FLAGS.l2_norm_clip = 1.0
+    FLAGS.noise_multiplier = 2.0
+    FLAGS.batch_size = 64
+
     # Approximate a good learning rate with fewer rounds
     # Use the best rate for evaluating the rest of the hyperparameters
     if True:
         print('---------------------- Learning rate -------------------------')
         hparam = [.1, .05, .025, .0125, .01, .0075, .005, .001]
-        #hparam = [.002375, .00225, .002125]
         for i in range(0,8):
             FLAGS.learning_rate = hparam[i]
             print('\n# Learning rate %s' % hparam[i])
@@ -254,10 +259,12 @@ def main(unused_argv):
                     break
             print(']\na'+str(i)+' =', accuracy_arr)
 
-    if False:
-        FLAGS.learning_rate = .002125
+    # Set learning rate
+    FLAGS.learning_rate = .0125
+
+    if True:
         print('\n---------------------- Clipping norm -------------------------')
-        hparam = [0.8,1.0,1.2]
+        hparam = [0.5,1.5,2.5]
         for i in range(0,3):
             FLAGS.l2_norm_clip = hparam[i]
             print('\n# Clipping norm %s' % hparam[i])
@@ -274,9 +281,9 @@ def main(unused_argv):
                 accuracy_arr.append(test_accuracy)
             print(']\na'+str(i)+' =', accuracy_arr)
 
-    if False:
+    if True:
         print('\n---------------------- Noise multiplier -------------------------')
-        hparam = [1.5,2.0,4.0]
+        hparam = [1.25,1.5,2.5,2.75]
         for i in range(0,3):
             FLAGS.noise_multiplier = hparam[i]
             print('\n# Noise multiplier %s' % hparam[i])
@@ -294,9 +301,9 @@ def main(unused_argv):
                 accuracy_arr.append(test_accuracy)
             print(']\na'+str(i)+' =', accuracy_arr)
 
-    if False:
+    if True:
         print('\n---------------------- Batch size -------------------------')
-        hparam = [16, 32, 64]
+        hparam = [32, 128]
         for i in range(0,3):
             FLAGS.batch_size = hparam[i]
             print('\n# Batch size %s' % hparam[i])
@@ -304,8 +311,7 @@ def main(unused_argv):
             accuracy_arr = []
             sys.stdout.write('e'+str(i)+'=[')
             steps_per_epoch = FLAGS.training_data_size // FLAGS.batch_size / 10
-            #for epoch in range(1, 10*FLAGS.epochs + 1):
-            for epoch in range(1, FLAGS.epochs + 1):
+            for epoch in range(1, 10*FLAGS.epochs + 1):
                 # Train the model for one epoch.
                 lr_classifier.train(input_fn=train_input_fn, steps=steps_per_epoch)
                 # Evaluate the model and print results
