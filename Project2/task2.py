@@ -235,6 +235,7 @@ def main(unused_argv):
     FLAGS.l2_norm_clip = 1.0
     FLAGS.noise_multiplier = 2.0
     FLAGS.batch_size = 64
+    evaluate = False
 
     # Approximate a good learning rate with fewer rounds
     # Use the best rate for evaluating the rest of the hyperparameters
@@ -262,7 +263,7 @@ def main(unused_argv):
     # Set learning rate
     FLAGS.learning_rate = .001
 
-    if True:
+    if evaluate:
         print('\n---------------------- Clipping norm -------------------------')
         hparam = [0.5,1.5,2.5]
         for i in range(0,3):
@@ -281,10 +282,11 @@ def main(unused_argv):
                 accuracy_arr.append(test_accuracy)
             print(']\na'+str(i)+' =', accuracy_arr)
 
-    if True:
+    if evaluate:
         print('\n---------------------- Noise multiplier -------------------------')
         hparam = [1.25,1.5,2.5,2.75]
-        for i in range(0,3):
+        for i in range(0,4):
+            i=3
             FLAGS.noise_multiplier = hparam[i]
             print('\n# Noise multiplier %s' % hparam[i])
             # Training loop.
@@ -300,10 +302,10 @@ def main(unused_argv):
                 accuracy_arr.append(test_accuracy)
             print(']\na'+str(i)+' =', accuracy_arr)
 
-    if True:
+    if evaluate:
         print('\n---------------------- Batch size -------------------------')
         hparam = [32, 128]
-        for i in range(0,3):
+        for i in range(0,2):
             FLAGS.batch_size = hparam[i]
             print('\n# Batch size %s' % hparam[i])
             # Training loop.
