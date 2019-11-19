@@ -184,11 +184,11 @@ def main(unused_argv):
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     hparams = ["learning_rate", "l2_norm_clip", "noise_multiplier", "batch_size"]
-    hvalues = [[.1, .05, .015, .01],[0.5,1.5,2.5],[1.25,1.5,2.5,2.75],[32, 128]]
+    hvalues = [[.5, .1, .05, .01, .005, .001],[0.5,1.5,2.5],[1.5,2.5,3.0],[32, 128]]
 
     for j in range(1,4):
 
-        FLAGS.learning_rate = .015
+        FLAGS.learning_rate = .1
         FLAGS.l2_norm_clip = 1.0
         FLAGS.noise_multiplier = 2.0
         FLAGS.batch_size = 64
@@ -204,7 +204,7 @@ def main(unused_argv):
                 FLAGS.noise_multiplier = hvalues[j][i]
             else:
                 FLAGS.batch_size = hvalues[j][i]
-            print('\n# ' + hparams[j] + '%s' % hvalues[j][i])
+            print('\n# %s %s' % (hparams[j], hvalues[j][i]))
 
             # Load training and test data.
             train_data, train_labels, test_data, test_labels = get_uci_hd_data()
@@ -231,7 +231,7 @@ def main(unused_argv):
                 accuracy_arr.append(test_accuracy)
                 if (test_accuracy<.3):
                     break
-                if (test_accuracy>.85):
+                if (test_accuracy>.868):
                     FLAGS.learning_rate =  hvalues[j][i]/2
             print(']\na'+str(i)+' =', accuracy_arr)
 
