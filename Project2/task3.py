@@ -24,6 +24,7 @@ from __future__ import print_function
 from absl import app
 from absl import flags
 
+import math
 import sys
 import pandas as pd
 import numpy as np
@@ -37,6 +38,7 @@ from tensorflow_privacy.privacy.analysis.rdp_accountant import compute_rdp_from_
 from tensorflow_privacy.privacy.analysis.rdp_accountant import get_privacy_spent
 from tensorflow_privacy.privacy.optimizers import dp_optimizer
 
+from sklearn.model_selection import train_test_split
 
 AdamOptimizer = tf.compat.v1.train.AdamOptimizer
 
@@ -74,9 +76,9 @@ class EpsilonPrintingTrainingHook(tf.estimator.SessionRunHook):
         formatted_ledger = privacy_ledger.format_ledger(samples, queries)
         rdp = compute_rdp_from_ledger(formatted_ledger, orders)
         eps = get_privacy_spent(orders, rdp, target_delta=1e-5)[0]
+        #print('For delta=1e-5, the current epsilon is: %.2f' % eps)
         sys.stdout.write(',%s' % eps)
         sys.stdout.flush()
-
 
 def lr_model_fn(features, labels, mode):
     """Model function for a LR."""
@@ -87,6 +89,7 @@ def lr_model_fn(features, labels, mode):
     # Calculate loss as a vector (to support microbatches in DP-SGD).
     vector_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
         labels=labels, logits=logits)
+
     # Define mean of loss across minibatch (for reporting through tf.Estimator).
     scalar_loss = tf.reduce_mean(input_tensor=vector_loss)
 
@@ -146,79 +149,46 @@ def lr_model_fn(features, labels, mode):
 
 def wrangle_the_data(data):
 
+    # Leave: num, exang, oldpeak, cp, slope, sex and age
+    data.drop(['trestbps','chol','fbs','restecg','thalach','ca','thal'], 1, inplace=True) # We can drop education-num, education is the same
+
     # age
-    data['age'] = pd.cut(data.age, range(0, 105, 10), right=False)
-    data['age'] = data['age'].astype("category").cat.codes
+    key, bucket = 'age', 10
+    #describe(data[key],bins)
+    data[key] = pd.cut(data[key], range(math.floor(data[key].min()), math.ceil(data[key].max())+1, bucket), right=False)
 
-    # hours-per-week
-    data['hours-per-week'] = pd.cut(data['hours-per-week'], range(0, 100, 10), right=False)
-    data['hours-per-week'] = data['hours-per-week'].astype("category").cat.codes
+    # Categorical
+    for key in ['sex', 'exang', 'cp', 'slope']:
+        data[key] = data[key].astype('category')
 
-    # workclass
-    data['workclass'].replace([" Without-pay", " Never-worked"], "Jobless", inplace=True)
-    data['workclass'].replace([" State-gov", " Federal-gov", " Local-gov"], "Govt", inplace=True)
-    data['workclass'].replace([" Self-emp-not-inc", " Self-emp-inc"], "Self-emp", inplace=True)
+    # Y: (angiographic disease status: Values 0, 1, 2, 3, 4)
+    data['num'] = data['num'].astype('bool').astype('int')
 
-    # marital status
-    data['marital-status'].replace([" Married-AF-spouse"," Married-civ-spouse"," Married-spouse-absent"], "Married", inplace=True)
-    data['marital-status'].replace([" Divorced"," Separated"," Widowed"," Never-married"], "Not-Married", inplace=True)
-
-    # country
-    data['native-country'].replace([" Canada"," Cuba"," Dominican-Republic", " El-Salvador", " Guatemala", " Haiti", " Honduras", " Jamaica", " Mexico", " Nicaragua", " Outlying-US(Guam-USVI-etc)", " Puerto-Rico", " Trinadad&Tobago", " United-States"], "North-America", inplace=True)
-    data['native-country'].replace([" Cambodia", " China", " Hong", " India", " Iran", " Japan", " Laos", " Philippines", " Taiwan", " Thailand", " Vietnam"], "Asia", inplace=True)
-    data['native-country'].replace([" Columbia", " Ecuador", " Peru"], "South-America", inplace=True)
-    data['native-country'].replace([" England", " France", " Germany", " Greece", " Holand-Netherlands", " Hungary", " Ireland", " Italy", " Poland", " Portugal", " Scotland", " Yugoslavia"], "Europe", inplace=True)
-    data['native-country'].replace([" South", " ?"], "Other", inplace=True)
-
-    # education
-    data.drop(['education-num'], 1, inplace=True) # We can drop education-num, education is the same
-
-    # drop some columns to prevent the model from overfitting
-    data.drop(['fnlwgt','relationship','capital-loss','capital-gain','occupation'], 1, inplace=True) # We can drop education-num, education is the same
-
-    # Y
-    data['salary'] = data['salary'].astype("category").cat.codes
-
-    #print(data.dtypes.sample(10))
-    return data.iloc[:,:-1], data['salary']
+    return data.iloc[:,:-1], data['num']
 
 
-def get_uci_data():
-    #data = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data')
-    #test = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test')
-    column_names = ['age', 'workclass', 'fnlwgt', 'education',
-                    'education-num', 'marital-status', 'occupation',
-                    'relationship', 'race', 'sex', 'capital-gain',
-                    'capital-loss', 'hours-per-week', 'native-country','salary']
-    data = pd.read_csv('../data/adult.data', header=None)
+def get_uci_hd_data():
+    column_names = ['age','sex','cp','trestbps','chol','fbs','restecg','thalach','exang','oldpeak','slope','ca','thal','num']
+    #data = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data')
+    data = pd.read_csv('../data/processed.cleveland.data', header=None)
     data.columns = column_names
-    test = pd.read_csv('../data/adult.test', header=None, skiprows=1)
-    test.columns = column_names
 
     X, Y = wrangle_the_data(data)
-    test_X, test_Y = wrangle_the_data(test)
-
     X = pd.get_dummies(X)
-    Y = np.array(Y, dtype=np.int32)
-    test_X = pd.get_dummies(X)
-    test_Y = np.array(Y, dtype=np.int32)
-    X, test_X = X.align(test_X, join='left', axis=1)
+    X, X_test, Y, Y_test = train_test_split(X,Y,test_size=0.2,train_size=0.8)
 
-    # You should pass df.values instead of df to tensorflow functions.
-    return X.values, Y, test_X.values, test_Y
-
+    return X.values, np.array(Y, dtype=np.int32), X_test.values, np.array(Y_test, dtype=np.int32)
 
 
 def main(unused_argv):
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
     hparams = ["learning_rate", "l2_norm_clip", "noise_multiplier", "batch_size"]
-    hvalues = [[.05, .01, .005],[0.5,1.5,2.5],[1.5,2.5,3.0],[32, 128]]
+    hvalues = [[.1, .05, .015, .01],[0.5,1.5,2.5],[1.25,1.5,2.5,2.75],[32, 128]]
 
-    for j in range(0,4):
+    for j in range(1,4):
 
-        # The defaults
-        FLAGS.learning_rate = .01
+        FLAGS.learning_rate = .015
         FLAGS.l2_norm_clip = 1.0
         FLAGS.noise_multiplier = 2.0
         FLAGS.batch_size = 64
@@ -237,7 +207,7 @@ def main(unused_argv):
             print('\n# ' + hparams[j] + '%s' % hvalues[j][i])
 
             # Load training and test data.
-            train_data, train_labels, test_data, test_labels = get_uci_data()
+            train_data, train_labels, test_data, test_labels = get_uci_hd_data()
 
             # Instantiate the tf.Estimator.
             lr_classifier = tf.estimator.Estimator(model_fn=lr_model_fn, model_dir=FLAGS.model_dir)
@@ -261,11 +231,11 @@ def main(unused_argv):
                 accuracy_arr.append(test_accuracy)
                 if (test_accuracy<.3):
                     break
-
+                if (test_accuracy>.85):
+                    FLAGS.learning_rate =  hvalues[j][i]/2
             print(']\na'+str(i)+' =', accuracy_arr)
 
 
 if __name__ == '__main__':
 
-    print('Started')
     app.run(main)
