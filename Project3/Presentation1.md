@@ -63,13 +63,27 @@ Miao, W. (2010). Did the results of promotion exams have a disparate impact on m
 
 ---
 
+# Discriminatory measures (original data)
+
+* Adverse impact ratio (pass rate)
+    * For Lieutenant:
+        * 31.6% / 58.1% = 54% (black / white)
+        * 20% / 58.1% = 34.4% (hispanic / white)
+    * For Captain:
+        * 37.5% / 64% = 58.6% (black / white)
+        * 37.5% / 64% = 58.6% (hispanic / white)
+* All are below 80% from the guideline
+
+
+---
+
 # Task
 
 * Predict who is promoted now (8+7 positions) / within 2 years (16+8 positions)
     * Logistic Regression model
     * 70-30 train-test split
-    * Data set balancing
 
-* Compute adverse impact ratio for the predicted data
+* Compute discriminatory measures for predicted data
+    * Adverse impact ratio
 
 
