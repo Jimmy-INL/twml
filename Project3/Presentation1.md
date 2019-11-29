@@ -10,24 +10,43 @@ Eeva-Maria Laiho, 2.11.2019
 
 ---
 
-# The Case: Ricci v. DeStefano
+# Case: Firefighter Promotions
 
-* In 2003 firefighters (n=118) took an exam to qualify for 15 promotions
-    * The test was designed to be culturally unbiased
-* No self-identified black candidates qualified
-    * City officials feared lawsuit on the basis of disproportionate exclusion
-    * The test was considered flawed and the results were invalidated
-       => Promotions based on the exam results were cancelled
-* 20 high-scoring firefighters filed a lawsuit on the basis a racial discrimination
-* In 2009 U.S. Supreme Court ruled in favor of the plaintives (5-4 decision)
-    * The court considered the test valid 
-      => the highest-scoring firefighters were promoted
+* New Haven FD administered an exam for firefighters to apply for promotion 
+* 70% score or higher required to pass
+* Exam results would be valid for promotion for the next 2 years 
+* City charter required that When k promotions are made the promotees must be selected from k+2 top scorers 
+* At the time 15 existing openings: 8 for Lieutenant, 7 for Captain
+* During the 2-year period a total of 16 Lieutenant and 8 Captain positions became available
+* Total of 118 firefighters took the exam
 
 ---
 
-# The Data
+# Exam Results
 
-* A data frame with 118 observations on the following 5 variables.
+![Exam results](./exam_results.png)
+
+Miao, W. (2010). Did the results of promotion exams have a disparate impact on minorities? Using statistical evidence in Ricci v. DeStefano. Journal of Statistics Education, 18(3).
+
+---
+
+# Lawsuit: Ricci v. DeStefano
+
+* City of New Haven decided not to certify the exam and no one was promoted
+    * Insufficient number of minorities would be getting a promotion 
+* The high-scoring test takers filed a lawsuit against the city on the grounds of reverse discrimination
+* Both District Court and Trial Court decided in favor of city of New Haven
+    * On the basis of "four-fifths rule" and adverse impact ratio 
+* Supreme Court ruled in favor of the firefighters
+    * The exam results had to be certified
+
+
+
+---
+
+# Data
+
+* 118 observations, 5 variables
     * Race: Race of firefighter (B=black, H=Hispanic, or W=white)
     * Position: Promotion desired (Captain or Lieutenant)
     * Oral: Oral exam score
@@ -42,13 +61,15 @@ Eeva-Maria Laiho, 2.11.2019
 | B | Captain | 82.38 | 70 | 74.952 |
 |...|
 
-* https://rdrr.io/cran/Stat2Data/man/Ricci.html
-
 ---
 
-# The Task
+# Task
 
-* Story: who gets promoted
-* Model: linear regression
+* Predict who is promoted now (8+7 positions) / within 2 years (16+8 positions)
+    * Logistic Regression model
+    * 70-30 train-test split
+    * Data set balancing
+
+* Compute adverse impact ratio for the predicted data
 
 
