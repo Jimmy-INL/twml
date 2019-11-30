@@ -1,0 +1,12 @@
+/* @theme presentation */
+
+@import 'default';
+
+section {
+  background: #FFFFFF;
+}
+
+small {
+  font-size: 0.85;
+  line-height: 0.85!important;
+}

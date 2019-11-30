@@ -1,5 +1,6 @@
 ---
 marp: true
+theme: presentation
 ---
 
 # DATA20019 Trustworthy Machine Learning
@@ -13,20 +14,20 @@ Eeva-Maria Laiho, 2.11.2019
 # Case: Firefighter Promotions
 
 * New Haven FD administered an exam for firefighters to apply for promotion 
-* 70% score or higher required to pass
-* Exam results would be valid for promotion for the next 2 years 
-* City charter required that When k promotions are made the promotees must be selected from k+2 top scorers 
-* At the time 15 existing openings: 8 for Lieutenant, 7 for Captain
-* During the 2-year period a total of 16 Lieutenant and 8 Captain positions became available
+* Score of 70% or higher was required to pass for promotion
+* Exam results would be valid for promoting for the next 2 years 
+* City charter required that when k promotions are made the promotees must be selected from the k+2 top scorers (of the exam)
+* At the time there were: 8 open positions for Lieutenant, 7 for Captain
+* Within 2 years a total of 16 Lieutenant and 8 Captain positions became available
 * Total of 118 firefighters took the exam
 
 ---
 
 # Exam Results
 
-![Exam results](./exam_results.png)
+![Exam results width:700px](./exam_results.png)
 
-Miao, W. (2010). Did the results of promotion exams have a disparate impact on minorities? Using statistical evidence in Ricci v. DeStefano. Journal of Statistics Education, 18(3).
+<small>Miao, W. (2010). Did the results of promotion exams have a disparate impact on minorities? Using statistical evidence in Ricci v. DeStefano. Journal of Statistics Education, 18(3).</small>
 
 ---
 
